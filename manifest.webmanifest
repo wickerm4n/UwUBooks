@@ -1,0 +1,17 @@
+{
+  "name": "UwU Books",
+  "short_name": "UwU Books",
+  "description": "Verwaltungsseite für eine GTA-RP-Bücherei.",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#110e17",
+  "theme_color": "#ff7abf",
+  "icons": [
+    {
+      "src": "assets/uwu-books-icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

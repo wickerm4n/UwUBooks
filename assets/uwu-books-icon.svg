@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" role="img" aria-labelledby="title desc">
+  <title id="title">UwU Books Icon</title>
+  <desc id="desc">Schlichtes pink-violettes Buchsymbol mit UwU-Gesicht.</desc>
+  <defs>
+    <linearGradient id="bg" x1="38" y1="28" x2="224" y2="226" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#ff7abf"/>
+      <stop offset="0.55" stop-color="#a575ff"/>
+      <stop offset="1" stop-color="#65d7ff"/>
+    </linearGradient>
+    <linearGradient id="book" x1="58" y1="55" x2="190" y2="203" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#fff7ff"/>
+      <stop offset="1" stop-color="#ffe0f3"/>
+    </linearGradient>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="150%">
+      <feDropShadow dx="0" dy="14" stdDeviation="13" flood-color="#120914" flood-opacity="0.35"/>
+    </filter>
+  </defs>
+  <rect width="256" height="256" rx="64" fill="#150f1e"/>
+  <circle cx="68" cy="54" r="55" fill="#ff7abf" opacity=".22"/>
+  <circle cx="210" cy="206" r="70" fill="#65d7ff" opacity=".16"/>
+  <path d="M56 56c0-15.46 12.54-28 28-28h88c15.46 0 28 12.54 28 28v144c0 15.46-12.54 28-28 28H84c-15.46 0-28-12.54-28-28V56Z" fill="url(#bg)" filter="url(#shadow)"/>
+  <path d="M75 63c0-8.84 7.16-16 16-16h76c8.84 0 16 7.16 16 16v130c0 8.84-7.16 16-16 16H91c-8.84 0-16-7.16-16-16V63Z" fill="url(#book)"/>
+  <path d="M91 47h15v162H91c-8.84 0-16-7.16-16-16V63c0-8.84 7.16-16 16-16Z" fill="#ffd1eb"/>
+  <path d="M121 91c-6 0-11-5-11-11 0-2.76 2.24-5 5-5s5 2.24 5 5a1 1 0 0 0 2 0c0-2.76 2.24-5 5-5s5 2.24 5 5c0 6-5 11-11 11Zm38 0c-6 0-11-5-11-11 0-2.76 2.24-5 5-5s5 2.24 5 5a1 1 0 0 0 2 0c0-2.76 2.24-5 5-5s5 2.24 5 5c0 6-5 11-11 11Z" fill="#3a253e"/>
+  <path d="M124 116c7.5 10.7 21.5 10.7 29 0" fill="none" stroke="#3a253e" stroke-width="8" stroke-linecap="round"/>
+  <path d="M121 147h38M121 166h44" stroke="#bf7baf" stroke-width="10" stroke-linecap="round" opacity=".72"/>
+  <path d="M183 58c17 6 28 20 31 38" stroke="#fff" stroke-width="8" stroke-linecap="round" opacity=".42"/>
+</svg>
