@@ -1345,6 +1345,16 @@ html[data-share-mode="readonly"] #deleteSelectedBtn {
   box-shadow: 0 26px 90px rgba(0, 0, 0, .48), inset 0 1px 0 rgba(255, 255, 255, .08);
 }
 
+
+.share-modal {
+  animation: modalIn .22s var(--ease) both;
+  transform-origin: center;
+}
+
+.modal-backdrop.is-closing .share-modal {
+  animation: modalOut .18s var(--ease) both;
+}
+
 .share-modal h3 {
   margin: 0 0 8px;
   font-size: 1.35rem;

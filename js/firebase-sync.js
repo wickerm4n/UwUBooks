@@ -134,19 +134,24 @@
       setLinks(state.shareId, state.editKey || '');
       if (!state.editKey) modal.editLink.value = 'Nur beim Erstellen oder mit Bearbeitungslink sichtbar.';
     }
+
+    modal.backdrop.classList.remove('is-closing');
     modal.backdrop.hidden = false;
-    modal.backdrop.classList.remove('is-leaving');
-    modal.backdrop.classList.add('is-visible');
     modal.closeBtn.focus({ preventScroll: true });
   }
 
   function closeShareModal() {
-    modal.backdrop.classList.add('is-leaving');
-    modal.backdrop.classList.remove('is-visible');
-    window.setTimeout(() => {
+    if (modal.backdrop.hidden || modal.backdrop.classList.contains('is-closing')) return;
+
+    modal.backdrop.classList.add('is-closing');
+
+    const finishClose = () => {
       modal.backdrop.hidden = true;
-      modal.backdrop.classList.remove('is-leaving');
-    }, 180);
+      modal.backdrop.classList.remove('is-closing');
+    };
+
+    modal.backdrop.addEventListener('animationend', finishClose, { once: true });
+    window.setTimeout(finishClose, 260);
   }
 
   function createShareModal() {
