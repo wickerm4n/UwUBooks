@@ -42,3 +42,18 @@ Einträge werden im Browser gespeichert. Die Daten liegen dadurch lokal auf dem 
 Die Seite verwendet keine externen Bibliotheken und lädt keine externen Skripte. Alle benötigten Dateien liegen im Projektordner.
 
 Die `index.html` kann auch direkt lokal geöffnet werden. Für die Veröffentlichung sollte trotzdem GitHub Pages oder ein lokaler Webserver verwendet werden, damit das Verhalten dem späteren Betrieb entspricht.
+
+
+## Aktualisierung auf GitHub Pages
+
+Die Seite prüft im Hintergrund die Datei `version.json`. Wenn dort eine neue Version steht, lädt sich die geöffnete Seite einmal automatisch neu. Danach erscheint oben rechts ein kurzer Hinweis.
+
+Bei Änderungen am Projekt sollte die Versionsnummer in folgenden Stellen angepasst werden:
+
+- `version.json`
+- `js/config.js`
+- die `?v=`-Angaben in `index.html`
+
+So werden neue Dateien auf GitHub Pages zuverlässiger geladen und alte Browser-Zwischenspeicher eher umgangen.
+
+Aktuelle Version: `2026.06.01.1`

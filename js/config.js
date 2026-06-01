@@ -4,8 +4,13 @@
   window.UwUBooks = window.UwUBooks || {};
   window.UwUBooks.APP_CONFIG = Object.freeze({
     appName: 'UwU Books',
+    appVersion: '2026.06.01.1',
     storageKey: 'uwu-books.entries.v3',
     confirmationStorageKey: 'uwu-books.confirmations.v1',
+    updateVersionUrl: 'version.json',
+    updateCheckIntervalMs: 5 * 60 * 1000,
+    updateInitialDelayMs: 20 * 1000,
+    updateReloadSessionKey: 'uwu-books.update-reloaded.v1',
     legacyStorageKeys: Object.freeze(['uwu-books.entries.v2', 'uwu-books.entries.v1']),
     exportFileBase: 'uwu-books',
     dateLocale: 'de-DE',
