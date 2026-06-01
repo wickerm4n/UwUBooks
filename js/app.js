@@ -32,15 +32,16 @@
   let selectedEntryIds = new Set();
   let renderTimer = 0;
   let readOnlyMode = false;
+  let sharedSessionMode = false;
 
   function notifyEntriesChanged(source = 'local') {
     document.dispatchEvent(new CustomEvent('uwu-books:entries-changed', {
-      detail: { source, entries: entries.map((entry) => ({ ...entry })) },
+      detail: { source, count: entries.length },
     }));
   }
 
   function persistAndRender(options = {}) {
-    if (!saveEntries(entries)) {
+    if (!sharedSessionMode && !saveEntries(entries)) {
       showToast('Konnte nicht gespeichert werden', 'Der Browser konnte die Liste gerade nicht speichern. Prüfe bitte, ob Speicherplatz frei ist oder ein privates Fenster genutzt wird.', 'error');
       return false;
     }
@@ -116,6 +117,7 @@
     renderEntries(filtered, selectedEntryIds);
     updateStats(entries);
     updateBulkControls(filtered);
+    updateReadOnlyActionButtons();
   }
 
   function scheduleRender() {
@@ -433,8 +435,16 @@
     const row = button.closest('tr[data-entry-id]');
     const id = row?.dataset.entryId;
     if (!id) return;
-    if (button.dataset.action === 'edit') editEntry(id);
-    if (button.dataset.action === 'delete') deleteEntry(id);
+    switch (button.dataset.action) {
+      case 'edit':
+        editEntry(id);
+        break;
+      case 'delete':
+        deleteEntry(id);
+        break;
+      default:
+        break;
+    }
   }
 
   function handleTableSelection(event) {
@@ -466,7 +476,7 @@
     return entries.map((entry) => ({ ...entry }));
   }
 
-  function applyEntriesFromShare(sharedEntries) {
+  function applyEntriesFromShare(sharedEntries, options = {}) {
     const result = validateAndNormalizeEntries(sharedEntries, {
       knownSignatures: [],
       knownIds: [],
@@ -477,8 +487,15 @@
     entries = result.entries.slice(0, APP_CONFIG.maxEntries);
     selectedEntryIds = new Set();
     resetForm();
-    saveEntries(entries);
+    if (options.persist === true && !sharedSessionMode) saveEntries(entries);
     render();
+  }
+
+  function updateReadOnlyActionButtons() {
+    selectors.tbody.querySelectorAll('button[data-action="edit"], button[data-action="delete"]').forEach((button) => {
+      button.disabled = readOnlyMode;
+      button.setAttribute('aria-disabled', String(readOnlyMode));
+    });
   }
 
   function setReadOnlyMode(enabled) {
@@ -498,10 +515,16 @@
     render();
   }
 
+  function setSharedSessionMode(enabled) {
+    sharedSessionMode = Boolean(enabled);
+    document.documentElement.dataset.sharedSession = sharedSessionMode ? 'true' : 'false';
+  }
+
   UwUBooks.app = Object.freeze({
     getEntries: getEntriesSnapshot,
     applyEntriesFromShare,
     setReadOnlyMode,
+    setSharedSessionMode,
     isReadOnlyMode: () => readOnlyMode,
   });
 
@@ -520,6 +543,11 @@
     selectors.exportJsonBtn.addEventListener('click', exportJson);
     selectors.exportCsvBtn.addEventListener('click', exportCsv);
     selectors.importJsonInput.addEventListener('change', importJson);
+    selectors.importJsonInput.closest('.file-button')?.addEventListener('keydown', (event) => {
+      if (event.key !== 'Enter' && event.key !== ' ') return;
+      event.preventDefault();
+      if (!selectors.importJsonInput.disabled) selectors.importJsonInput.click();
+    });
     selectors.searchInput.addEventListener('input', scheduleRender);
     selectors.statusFilter.addEventListener('change', render);
     selectors.phone.addEventListener('beforeinput', blockInvalidPhoneInput);

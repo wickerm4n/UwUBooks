@@ -75,7 +75,7 @@
       window.crypto.getRandomValues(bytes);
       return `uwu-${Array.from(bytes, (byte) => byte.toString(16).padStart(2, '0')).join('')}`;
     }
-    return `uwu-${Date.now()}-${Math.random().toString(16).slice(2)}`;
+    throw new Error('Dieser Browser stellt keine sichere Zufallsquelle bereit.');
   }
 
   function legacySubmittedDate(input) {

@@ -44,6 +44,7 @@ html {
 
 body {
   min-height: 100vh;
+  min-height: 100dvh;
   margin: 0;
   color: var(--text);
   overflow-x: hidden;
@@ -1044,8 +1045,8 @@ textarea:focus {
 
 .toast-stack {
   position: fixed;
-  top: 22px;
-  right: 22px;
+  top: max(22px, env(safe-area-inset-top));
+  right: max(22px, env(safe-area-inset-right));
   z-index: 60;
   display: grid;
   gap: 10px;
@@ -1195,10 +1196,33 @@ textarea:focus {
   }
 
   .book-table td {
+    display: grid;
+    grid-template-columns: minmax(94px, .42fr) minmax(0, 1fr);
+    gap: 8px;
+    align-items: start;
     padding: 8px 4px;
     border-bottom: 0;
     text-align: left;
     height: auto;
+  }
+
+  .book-table td::before {
+    content: attr(data-label);
+    grid-column: 1;
+    grid-row: 1 / -1;
+    color: var(--muted-2);
+    font-size: .72rem;
+    font-weight: 900;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+  }
+
+  .book-table td > * {
+    grid-column: 2;
+  }
+
+  .book-table .select-cell::before {
+    align-self: center;
   }
 
   .person-cell,
@@ -1316,9 +1340,19 @@ textarea:focus {
   }
 
   .icon-button {
-    width: 42px;
-    height: 42px;
+    width: 44px;
+    height: 44px;
     border-radius: 14px;
+  }
+}
+
+@media (max-width: 760px) {
+  .glass-card,
+  .hero__actions,
+  .book-table th,
+  .modal-backdrop,
+  .toast {
+    backdrop-filter: none;
   }
 }
 
@@ -1365,6 +1399,16 @@ html[data-share-mode="readonly"] #deleteSelectedBtn {
   margin: 0 0 16px;
   color: var(--muted);
   line-height: 1.45;
+}
+
+.share-warning {
+  margin: 0 0 16px;
+  padding: 11px 13px;
+  border: 1px solid rgba(255, 211, 122, .24);
+  border-radius: 15px;
+  color: #ffe6ad;
+  background: rgba(255, 211, 122, .08);
+  line-height: 1.4;
 }
 
 .share-status {

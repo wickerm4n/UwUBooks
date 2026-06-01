@@ -9,6 +9,7 @@
   const intervalMs = Number(APP_CONFIG.updateCheckIntervalMs || 300000);
   const reloadSessionKey = APP_CONFIG.updateReloadSessionKey || 'uwu-books.update-reloaded.v1';
   const noticeParam = 'uwuUpdated';
+  let updateCheckInFlight = false;
 
   function showUpdateNotice(version) {
     const ui = window.UwUBooks && window.UwUBooks.ui;
@@ -40,14 +41,23 @@
 
   async function fetchRemoteVersion() {
     if (window.location.protocol === 'file:') return '';
+    if (document.visibilityState === 'hidden' || navigator.onLine === false) return '';
 
-    const response = await fetch(buildVersionUrl(), {
-      cache: 'no-store',
-      headers: {
-        'Cache-Control': 'no-cache',
-        'Pragma': 'no-cache',
-      },
-    });
+    const controller = new AbortController();
+    const timeoutId = window.setTimeout(() => controller.abort(), 8000);
+    let response;
+    try {
+      response = await fetch(buildVersionUrl(), {
+        cache: 'no-store',
+        signal: controller.signal,
+        headers: {
+          'Cache-Control': 'no-cache',
+          'Pragma': 'no-cache',
+        },
+      });
+    } finally {
+      window.clearTimeout(timeoutId);
+    }
 
     if (!response.ok) return '';
 
@@ -68,6 +78,8 @@
   }
 
   async function checkForUpdate() {
+    if (updateCheckInFlight) return;
+    updateCheckInFlight = true;
     try {
       const remoteVersion = await fetchRemoteVersion();
       if (!remoteVersion || !appVersion || remoteVersion === appVersion) return;
@@ -75,6 +87,8 @@
       reloadOnceForVersion(remoteVersion);
     } catch (_error) {
       // Updateprüfung bleibt bewusst still, damit die Oberfläche nicht stört.
+    } finally {
+      updateCheckInFlight = false;
     }
   }
 
@@ -85,6 +99,10 @@
 
     window.setTimeout(checkForUpdate, initialDelayMs);
     window.setInterval(checkForUpdate, intervalMs);
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'visible') checkForUpdate();
+    });
+    window.addEventListener('online', checkForUpdate);
   }
 
   if (document.readyState === 'loading') {

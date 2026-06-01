@@ -194,16 +194,19 @@
 
       const selectionCell = document.createElement('td');
       selectionCell.className = 'select-cell';
+      selectionCell.dataset.label = 'Auswahl';
       selectionCell.appendChild(createSelectionCheckbox(entry, selectedIds.has(entry.id)));
 
       const personCell = document.createElement('td');
       personCell.className = 'person-cell';
+      personCell.dataset.label = 'Person';
       const personName = document.createElement('strong');
       personName.textContent = `${entry.firstName} ${entry.lastName}`.trim() || '—';
       personCell.append(personName, createSubline('Pseudonym', entry.pseudonym), createSubline('Konto', entry.accountData));
 
       const titleCell = document.createElement('td');
       titleCell.className = 'title-cell';
+      titleCell.dataset.label = 'Buchtitel';
       const title = document.createElement('strong');
       title.textContent = entry.bookTitle || 'Ohne Titel';
       const notes = document.createElement('span');
@@ -212,6 +215,7 @@
       titleCell.append(title, notes);
 
       const statusCell = document.createElement('td');
+      statusCell.dataset.label = 'Bearbeitung';
       const badge = document.createElement('span');
       badge.className = `badge ${badgeClass(entry.workStatus)}`;
       badge.textContent = entry.workStatus;
@@ -229,10 +233,12 @@
       statusCell.append(badge, submittedLine, publishedLine, editorialLine);
 
       const contactCell = document.createElement('td');
+      contactCell.dataset.label = 'Kontakt';
       contactCell.appendChild(createSubline('Telefon', entry.phone));
 
       const actionsCell = document.createElement('td');
       actionsCell.className = 'actions-cell';
+      actionsCell.dataset.label = 'Aktionen';
       actionsCell.append(
         createIconButton('edit', 'Eintrag bearbeiten', icons.edit),
         createIconButton('delete', 'Eintrag löschen', icons.delete, true)

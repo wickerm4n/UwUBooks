@@ -13,11 +13,15 @@
     editKey: '',
     editKeyHash: '',
     remoteUpdatedAt: '',
+    remoteEtag: '',
     pollingTimer: 0,
     pushTimer: 0,
     applyingRemote: false,
     shareReady: false,
   };
+  const SHARE_ID_RE = /^[0-9a-f]{24}$/;
+  const EDIT_KEY_RE = /^[0-9a-f]{36}$/;
+  const EDIT_KEY_SESSION_PREFIX = 'uwu-books.share-edit-key.';
 
   const modal = createShareModal();
   document.body.appendChild(modal.backdrop);
@@ -35,6 +39,14 @@
     return `${databaseBaseUrl()}/${encodeURIComponent(basePath)}/${encodeURIComponent(id)}.json`;
   }
 
+  function isValidShareId(value) {
+    return SHARE_ID_RE.test(String(value || ''));
+  }
+
+  function isValidEditKey(value) {
+    return EDIT_KEY_RE.test(String(value || ''));
+  }
+
   function randomToken(bytes = 18) {
     const array = new Uint8Array(bytes);
     crypto.getRandomValues(array);
@@ -47,40 +59,98 @@
     return Array.from(new Uint8Array(hash), (value) => value.toString(16).padStart(2, '0')).join('');
   }
 
-  function currentUrlWithParams(params) {
+  function currentUrlWithParams(params, fragmentParams = {}) {
     const url = new URL(window.location.href);
     ['share', 'mode', 'key', 'uwuUpdated', '_'].forEach((name) => url.searchParams.delete(name));
     Object.entries(params).forEach(([key, value]) => {
       if (value) url.searchParams.set(key, value);
     });
+    const hashParams = new URLSearchParams();
+    Object.entries(fragmentParams).forEach(([key, value]) => {
+      if (value) hashParams.set(key, value);
+    });
+    const hash = hashParams.toString();
+    url.hash = hash ? `#${hash}` : '';
     return url.toString();
+  }
+
+  function editKeySessionKey(shareId) {
+    return `${EDIT_KEY_SESSION_PREFIX}${shareId}`;
+  }
+
+  function rememberEditKey(shareId, editKey) {
+    if (!isValidShareId(shareId) || !isValidEditKey(editKey)) return;
+    try {
+      sessionStorage.setItem(editKeySessionKey(shareId), editKey);
+    } catch (_error) {
+      // Session storage is a convenience only; the in-memory key still works.
+    }
+  }
+
+  function readRememberedEditKey(shareId) {
+    try {
+      const remembered = sessionStorage.getItem(editKeySessionKey(shareId));
+      return isValidEditKey(remembered) ? remembered : '';
+    } catch (_error) {
+      return '';
+    }
+  }
+
+  function scrubSensitiveUrlParams() {
+    const url = new URL(window.location.href);
+    const hashParams = new URLSearchParams(url.hash.replace(/^#/, ''));
+    const hadKey = url.searchParams.has('key') || hashParams.has('key');
+    url.searchParams.delete('key');
+    hashParams.delete('key');
+    const hash = hashParams.toString();
+    url.hash = hash ? `#${hash}` : '';
+    if (hadKey && window.history && typeof window.history.replaceState === 'function') {
+      window.history.replaceState({}, document.title, url.pathname + url.search + url.hash);
+    }
   }
 
   function readUrlState() {
     const url = new URL(window.location.href);
+    const hashParams = new URLSearchParams(url.hash.replace(/^#/, ''));
+    const shareId = String(url.searchParams.get('share') || '').trim().toLowerCase();
+    const keyFromUrl = String(hashParams.get('key') || url.searchParams.get('key') || '').trim().toLowerCase();
+    const editKey = isValidEditKey(keyFromUrl) ? keyFromUrl : readRememberedEditKey(shareId);
+    if (isValidEditKey(keyFromUrl)) rememberEditKey(shareId, keyFromUrl);
+    scrubSensitiveUrlParams();
     return {
-      shareId: String(url.searchParams.get('share') || '').trim(),
+      shareId,
       mode: String(url.searchParams.get('mode') || '').trim().toLowerCase(),
-      editKey: String(url.searchParams.get('key') || '').trim(),
+      editKey,
     };
   }
 
   async function requestJson(url, options = {}) {
+    const { includeMeta = false, headers = {}, ...fetchOptions } = options;
     const response = await fetch(url, {
-      ...options,
+      ...fetchOptions,
       cache: 'no-store',
       headers: {
         'Content-Type': 'application/json',
         'Cache-Control': 'no-cache',
-        ...(options.headers || {}),
+        ...headers,
       },
     });
 
     if (!response.ok) {
-      throw new Error('Firebase ist gerade nicht erreichbar.');
+      const error = new Error('Firebase ist gerade nicht erreichbar.');
+      error.status = response.status;
+      throw error;
     }
 
-    return response.json();
+    const text = await response.text();
+    const data = text ? JSON.parse(text) : null;
+    if (includeMeta) {
+      return {
+        data,
+        etag: String(response.headers.get('ETag') || '').replace(/^"|"$/g, ''),
+      };
+    }
+    return data;
   }
 
   function getLocalEntries() {
@@ -92,8 +162,14 @@
   function applyRemoteEntries(entries) {
     if (!UwUBooks.app || typeof UwUBooks.app.applyEntriesFromShare !== 'function') return;
     state.applyingRemote = true;
-    UwUBooks.app.applyEntriesFromShare(Array.isArray(entries) ? entries : []);
+    UwUBooks.app.applyEntriesFromShare(Array.isArray(entries) ? entries : [], { persist: false });
     window.setTimeout(() => { state.applyingRemote = false; }, 0);
+  }
+
+  function setSharedSessionMode(enabled) {
+    if (UwUBooks.app && typeof UwUBooks.app.setSharedSessionMode === 'function') {
+      UwUBooks.app.setSharedSessionMode(Boolean(enabled));
+    }
   }
 
   function setReadOnlyMode(enabled) {
@@ -121,7 +197,7 @@
   }
 
   function setLinks(shareId, editKey) {
-    const editLink = currentUrlWithParams({ share: shareId, mode: 'edit', key: editKey });
+    const editLink = currentUrlWithParams({ share: shareId, mode: 'edit' }, { key: editKey });
     const viewLink = currentUrlWithParams({ share: shareId, mode: 'view' });
     modal.editLink.value = editLink;
     modal.viewLink.value = viewLink;
@@ -173,6 +249,10 @@
     text.className = 'share-modal__text';
     text.textContent = 'Teile die Bücherliste mit anderen. Der Bearbeitungslink darf nur an Personen gehen, die Änderungen machen sollen.';
 
+    const warning = document.createElement('p');
+    warning.className = 'share-warning';
+    warning.textContent = 'Behandle den Bearbeitungslink wie ein Passwort. Der Ansichtslink ist zum Mitlesen gedacht.';
+
     const status = document.createElement('p');
     status.className = 'share-status';
 
@@ -199,7 +279,7 @@
     closeBtn.textContent = 'Schließen';
 
     actions.append(createBtn, closeBtn);
-    dialog.append(title, text, status, linksWrap, actions);
+    dialog.append(title, text, warning, status, linksWrap, actions);
     backdrop.appendChild(dialog);
 
     closeBtn.addEventListener('click', closeShareModal);
@@ -281,9 +361,10 @@
       const editKeyHash = await sha256(editKey);
       const payload = buildPayload(getLocalEntries(), editKeyHash);
 
-      await requestJson(sharePath(shareId), {
+      const created = await requestJson(sharePath(shareId), {
         method: 'PUT',
         body: JSON.stringify(payload),
+        includeMeta: true,
       });
 
       state.shareId = shareId;
@@ -291,11 +372,14 @@
       state.editKey = editKey;
       state.editKeyHash = editKeyHash;
       state.remoteUpdatedAt = payload.updatedAt;
+      state.remoteEtag = created.etag || '';
       state.shareReady = true;
 
+      rememberEditKey(shareId, editKey);
       setLinks(shareId, editKey);
       updateModalText();
       startPolling();
+      setSharedSessionMode(true);
       setReadOnlyMode(false);
       ui.showToast('Geteilte Liste erstellt', 'Du kannst den Bearbeitungslink oder Ansichtslink jetzt weitergeben.');
     } catch (_error) {
@@ -309,6 +393,11 @@
   async function loadSharedListFromUrl() {
     const urlState = readUrlState();
     if (!urlState.shareId) return;
+    if (!isValidShareId(urlState.shareId)) {
+      ui.showToast('Geteilter Link ungÃ¼ltig', 'Dieser Link passt nicht zu einer UwU-Books-Liste.', 'error');
+      setReadOnlyMode(true);
+      return;
+    }
 
     state.shareId = urlState.shareId;
     state.mode = urlState.mode === 'edit' && urlState.editKey ? 'edit' : 'view';
@@ -321,7 +410,11 @@
     }
 
     try {
-      const remote = await requestJson(sharePath(state.shareId));
+      const pulled = await requestJson(sharePath(state.shareId), {
+        includeMeta: true,
+        headers: { 'X-Firebase-ETag': 'true' },
+      });
+      const remote = pulled.data;
       if (!remote || !Array.isArray(remote.entries)) {
         ui.showToast('Liste nicht gefunden', 'Der geteilte Link passt zu keiner Liste.', 'error');
         return;
@@ -329,6 +422,7 @@
 
       state.editKeyHash = String(remote.editKeyHash || '');
       state.remoteUpdatedAt = String(remote.updatedAt || '');
+      state.remoteEtag = pulled.etag || '';
       state.shareReady = true;
 
       if (state.mode === 'edit') {
@@ -341,6 +435,7 @@
       }
 
       applyRemoteEntries(remote.entries);
+      setSharedSessionMode(true);
       setReadOnlyMode(state.mode !== 'edit');
       startPolling();
 
@@ -357,14 +452,21 @@
     if (!state.shareReady || !state.shareId || !isConfigured()) return;
 
     try {
-      const remote = await requestJson(sharePath(state.shareId));
+      const pulled = await requestJson(sharePath(state.shareId), {
+        includeMeta: true,
+        headers: { 'X-Firebase-ETag': 'true' },
+      });
+      const remote = pulled.data;
       if (!remote || !Array.isArray(remote.entries)) return;
 
       const updatedAt = String(remote.updatedAt || '');
       if (updatedAt && updatedAt !== state.remoteUpdatedAt) {
         state.remoteUpdatedAt = updatedAt;
+        state.remoteEtag = pulled.etag || '';
         applyRemoteEntries(remote.entries);
         ui.showToast('Liste aktualisiert', 'Neue Änderungen wurden übernommen.');
+      } else if (pulled.etag) {
+        state.remoteEtag = pulled.etag;
       }
     } catch (_error) {
       // Ruhig bleiben, beim nächsten Intervall wird erneut geprüft.
@@ -388,12 +490,21 @@
 
     try {
       const payload = buildPayload(getLocalEntries(), state.editKeyHash);
-      await requestJson(sharePath(state.shareId), {
+      const headers = state.remoteEtag ? { 'If-Match': state.remoteEtag } : {};
+      const pushed = await requestJson(sharePath(state.shareId), {
         method: 'PUT',
         body: JSON.stringify(payload),
+        headers,
+        includeMeta: true,
       });
       state.remoteUpdatedAt = payload.updatedAt;
-    } catch (_error) {
+      state.remoteEtag = pushed.etag || '';
+    } catch (error) {
+      if (error.status === 412) {
+        await pullRemote();
+        ui.showToast('Konflikt erkannt', 'Die Liste wurde woanders geändert. Bitte prüfe die aktuelle Version und speichere deine Änderung erneut.', 'error');
+        return;
+      }
       ui.showToast('Nicht abgeglichen', 'Die Änderung konnte gerade nicht in die geteilte Liste übernommen werden.', 'error');
     }
   }
