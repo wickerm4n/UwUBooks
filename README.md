@@ -1,61 +1,78 @@
 # UwU Books
 
-Verwaltungsseite für UwU Books in GTA V.
+Eine kleine Bücherverwaltung für die UwU-Books-RP-Community in GTA V.
 
-## Nutzung
+Hier können Buchabgaben, Bearbeitungsstände und wichtige Kontaktinfos übersichtlich gesammelt werden, damit im RP-Alltag nichts untergeht.
 
-UwU Books dient zur Verwaltung von Bücherei-Einträgen. Einträge können angelegt, bearbeitet, gesucht, gefiltert, gelöscht und als Datei gespeichert werden.
+## Wofür ist die Seite gedacht?
 
-Die Liste wird lokal im Browser gespeichert. Dadurch bleiben Einträge auf dem jeweiligen Gerät und im jeweiligen Browserprofil erhalten.
+UwU Books hilft dabei, den Überblick über Bücher und Einträge zu behalten:
 
-Über geteilte Listen können Einträge mit anderen Personen geteilt werden. Dafür nutzt UwU Books Firebase, damit mehrere Personen dieselbe Liste öffnen und Änderungen synchronisiert werden können.
+- neue Einträge anlegen
+- bestehende Einträge bearbeiten
+- nach Personen, Titeln oder Status suchen
+- Listen filtern und sortieren
+- Einträge sichern oder exportieren
+- eine Liste mit anderen Personen teilen
+
+Die Seite läuft direkt im Browser. Es muss nichts installiert werden.
+
+## So nutzt du UwU Books
+
+Öffne die Seite und trage die Daten ein, die für den RP-Ablauf gebraucht werden. Deine normale Liste wird im Browser auf deinem Gerät gespeichert.
+
+Wenn du mit anderen zusammenarbeiten möchtest, kannst du über den Teilen-Button eine geteilte Liste erstellen.
 
 ## Geteilte Listen
 
-Über den Share-Button kann eine geteilte Liste erstellt werden. Danach stehen zwei Links zur Verfügung:
+Beim Teilen bekommst du zwei verschiedene Links:
 
-- Bearbeitungslink: Personen mit diesem Link können die Liste bearbeiten.
-- Ansichtslink: Personen mit diesem Link können die Liste nur ansehen.
+- Ansichtslink: Für Personen, die nur mitlesen sollen.
+- Bearbeitungslink: Für Personen, die Einträge ändern dürfen.
 
-Änderungen an geteilten Listen werden automatisch abgeglichen.
+Behandle den Bearbeitungslink wie einen Schlüssel. Wer diesen Link hat, kann die geteilte Liste bearbeiten.
 
-## Felder
+Gib den Bearbeitungslink deshalb nur an Personen weiter, denen du vertraust. Wenn ein Bearbeitungslink versehentlich weitergegeben wurde, erstelle am besten eine neue geteilte Liste und nutze den alten Link nicht weiter.
+
+## Welche Daten werden eingetragen?
+
+Je nach RP-Ablauf können zum Beispiel diese Infos gepflegt werden:
 
 - Vorname
 - Nachname
 - Telefonnummer
 - Kontodaten
 - Buchtitel
-- Abgegeben am
-- Veröffentlicht am
-- Im Lektorat
-- Übernommen von
+- Abgabedatum
+- Veröffentlichungsdatum
+- Lektoratsstatus
+- zuständige Person
 - Bearbeitungsstatus
 - Pseudonym
 - Anmerkungen
 
+Trage bitte nur Daten ein, die wirklich für die Verwaltung der Bücher gebraucht werden.
+
 ## Sicherungen
 
-Einträge können als JSON-Sicherung gespeichert und später wieder eingespielt werden. Zusätzlich kann die Liste als CSV-Datei gespeichert werden.
+Du kannst deine Liste als Datei sichern und später wieder einspielen. Zusätzlich lässt sich eine CSV-Datei exportieren, zum Beispiel für Tabellenprogramme.
 
-## Hinweise
+Wichtig: Sicherungen und Exporte enthalten die sichtbaren Eintragsdaten. Gib solche Dateien also ebenfalls nur an passende Personen weiter.
 
-Die Seite verwendet keine externen Bibliotheken. Alle benötigten Dateien liegen im Projektordner.
+## Datenschutz im RP-Alltag
 
-Für die Veröffentlichung ist GitHub Pages vorgesehen.
-## Datenschutz und Sicherheit
+UwU Books ist für Community-Verwaltung gedacht, nicht für geheime oder sehr sensible Daten.
 
-UwU Books verarbeitet Kontakt- und Kontodaten. Speichere deshalb nur Daten, die fuer den RP-Ablauf wirklich gebraucht werden.
+Ein paar einfache Regeln helfen:
 
-- Lokale Listen liegen im Browser-Speicher des jeweiligen Geraets.
-- Geteilte Listen werden in Firebase gespeichert und sind ueber den jeweiligen Link abrufbar.
-- JSON- und CSV-Exporte enthalten die sichtbaren Eintragsdaten im Klartext.
-- Ansichtslinks erlauben Lesen; Bearbeitungslinks sind Berechtigungen zum Bearbeiten und sollten nur an vertrauenswuerdige Personen gehen.
-- Der Bearbeitungsschluessel wird im Link-Fragment (`#key=...`) transportiert und nach dem Oeffnen in der aktuellen Browser-Sitzung gemerkt. Dadurch wird er nicht an den Webserver uebertragen.
-- Wenn ein Bearbeitungslink weitergegeben wurde, sollte die geteilte Liste neu erstellt und der alte Link nicht weiter genutzt werden.
+- Bearbeitungslinks nur an vertrauenswürdige Personen geben.
+- Ansichtslinks nur an Personen geben, die die Liste wirklich sehen sollen.
+- Keine unnötigen privaten Informationen eintragen.
+- Exporte und Sicherungen nicht öffentlich teilen.
+- Bei Unsicherheit lieber eine neue geteilte Liste erstellen.
 
-Fuer echten Schreibschutz muessen Firebase-Regeln, Firebase Auth oder eine Backend-/Cloud-Function-Schicht Schreibzugriffe serverseitig pruefen. Reine UI-Sperren im Browser reichen dafuer nicht aus.
+## Veröffentlichung
 
-Fuer produktives Hosting sollten zusaetzlich HTTP-Sicherheitsheader gesetzt werden, besonders `Content-Security-Policy`, `Referrer-Policy: no-referrer`, `X-Content-Type-Options: nosniff`, `X-Frame-Options: DENY` oder ein wirksames `frame-ancestors 'none'` als Header, sowie eine restriktive `Permissions-Policy`. GitHub Pages unterstuetzt eigene Header nur eingeschraenkt; bei Cloudflare Pages, Netlify oder einem eigenen Webserver laesst sich das sauber konfigurieren.
+Die Seite ist für GitHub Pages vorbereitet und kann dort als einfache Webseite hochgeladen werden.
 
-Weitere Details zum Firebase-Schreibschutz stehen in FIREBASE_SECURITY.md.
+Technische Zusatzinfos für Admins stehen in [FIREBASE_SECURITY.md](FIREBASE_SECURITY.md).
