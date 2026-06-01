@@ -1321,3 +1321,88 @@ textarea:focus {
     border-radius: 14px;
   }
 }
+
+html[data-share-mode="readonly"] .form-panel {
+  opacity: .72;
+}
+
+html[data-share-mode="readonly"] .actions-cell button,
+html[data-share-mode="readonly"] #deleteAllBtn,
+html[data-share-mode="readonly"] #deleteSelectedBtn {
+  opacity: .45;
+  cursor: not-allowed;
+}
+
+.share-modal {
+  width: min(560px, calc(100vw - 28px));
+  border: 1px solid rgba(255, 255, 255, .12);
+  border-radius: 28px;
+  padding: 24px;
+  color: var(--text);
+  background:
+    radial-gradient(circle at 20% 0%, rgba(255, 122, 191, .20), transparent 32%),
+    linear-gradient(145deg, rgba(35, 25, 47, .96), rgba(22, 17, 30, .96));
+  box-shadow: 0 26px 90px rgba(0, 0, 0, .48), inset 0 1px 0 rgba(255, 255, 255, .08);
+}
+
+.share-modal h3 {
+  margin: 0 0 8px;
+  font-size: 1.35rem;
+}
+
+.share-modal__text,
+.share-status {
+  margin: 0 0 16px;
+  color: var(--muted);
+  line-height: 1.45;
+}
+
+.share-status {
+  padding: 12px 14px;
+  border: 1px solid rgba(255, 255, 255, .08);
+  border-radius: 16px;
+  background: rgba(255, 255, 255, .05);
+}
+
+.share-links {
+  display: grid;
+  gap: 12px;
+  margin: 16px 0 18px;
+}
+
+.share-link-field {
+  display: grid;
+  gap: 7px;
+}
+
+.share-link-field > span {
+  color: var(--muted);
+  font-weight: 800;
+  font-size: .84rem;
+}
+
+.share-link-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 8px;
+}
+
+.share-link-row input {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.share-modal__actions {
+  margin-top: 18px;
+}
+
+@media (max-width: 560px) {
+  .share-link-row {
+    grid-template-columns: 1fr;
+  }
+
+  .share-modal__actions {
+    align-items: stretch;
+  }
+}

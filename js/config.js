@@ -4,7 +4,7 @@
   window.UwUBooks = window.UwUBooks || {};
   window.UwUBooks.APP_CONFIG = Object.freeze({
     appName: 'UwU Books',
-    appVersion: '2026.06.01.1',
+    appVersion: '2026.06.01.2',
     storageKey: 'uwu-books.entries.v3',
     confirmationStorageKey: 'uwu-books.confirmations.v1',
     updateVersionUrl: 'version.json',
@@ -16,6 +16,13 @@
     dateLocale: 'de-DE',
     workStatuses: Object.freeze(['Offen', 'In Bearbeitung', 'Abgeschlossen']),
     legacyStatuses: Object.freeze(['Abgegeben', 'Veröffentlicht', 'Im Lektorat']),
+	firebase: Object.freeze({
+	  enabled: true,
+	  databaseUrl: 'https://uwubooks-default-rtdb.europe-west1.firebasedatabase.app',
+	  sharePath: 'uwuBooksShares',
+	  syncIntervalMs: 5000,
+	  pushDebounceMs: 900,
+	}),
     maxEntries: 1000,
     maxImportBytes: 2 * 1024 * 1024,
     maxToastCount: 5,

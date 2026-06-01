@@ -57,3 +57,46 @@ Bei Änderungen am Projekt sollte die Versionsnummer in folgenden Stellen angepa
 So werden neue Dateien auf GitHub Pages zuverlässiger geladen und alte Browser-Zwischenspeicher eher umgangen.
 
 Aktuelle Version: `2026.06.01.1`
+
+
+## Geteilte Listen mit Firebase
+
+Die Seite kann geteilte Listen über Firebase Realtime Database speichern. Dafür wird kein Firebase-SDK geladen, sondern die Realtime-Database-REST-Schnittstelle genutzt.
+
+### Einrichtung
+
+1. In Firebase ein Projekt erstellen.
+2. Unter **Build** die **Realtime Database** erstellen.
+3. Die Datenbank-URL kopieren. Sie sieht ungefähr so aus:
+
+```text
+https://projektname-default-rtdb.europe-west1.firebasedatabase.app
+```
+
+4. In `js/config.js` Firebase aktivieren und die URL eintragen:
+
+```js
+firebase: Object.freeze({
+  enabled: true,
+  databaseUrl: 'https://projektname-default-rtdb.europe-west1.firebasedatabase.app',
+  sharePath: 'uwuBooksShares',
+  syncIntervalMs: 5000,
+  pushDebounceMs: 900,
+}),
+```
+
+5. In Firebase bei den Realtime-Database-Regeln die Regeln aus `database.rules.example.json` übernehmen.
+6. Dateien auf GitHub Pages hochladen.
+
+### Nutzung
+
+Über den Share-Button im Header kann eine geteilte Liste erstellt werden. Danach gibt es zwei Links:
+
+- Bearbeitungslink: Personen mit diesem Link können die Liste bearbeiten.
+- Ansichtslink: Personen mit diesem Link können die Liste nur ansehen.
+
+Die Seite gleicht Änderungen automatisch ab. Bei mehreren Personen gilt: Die zuletzt gespeicherte Änderung gewinnt.
+
+### Hinweis
+
+Die Beispiel-Regeln sind bewusst einfach gehalten und für eine kleine RP-Verwaltung gedacht. Wer echte personenbezogene Daten speichern möchte, sollte Firebase Authentication und strengere Regeln verwenden.

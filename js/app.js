@@ -31,13 +31,27 @@
   let entries = loadEntries();
   let selectedEntryIds = new Set();
   let renderTimer = 0;
+  let readOnlyMode = false;
 
-  function persistAndRender() {
+  function notifyEntriesChanged(source = 'local') {
+    document.dispatchEvent(new CustomEvent('uwu-books:entries-changed', {
+      detail: { source, entries: entries.map((entry) => ({ ...entry })) },
+    }));
+  }
+
+  function persistAndRender(options = {}) {
     if (!saveEntries(entries)) {
       showToast('Konnte nicht gespeichert werden', 'Der Browser konnte die Liste gerade nicht speichern. Prüfe bitte, ob Speicherplatz frei ist oder ein privates Fenster genutzt wird.', 'error');
       return false;
     }
     render();
+    if (options.notify !== false) notifyEntriesChanged(options.source || 'local');
+    return true;
+  }
+
+  function blockWriteWhenReadOnly() {
+    if (!readOnlyMode) return false;
+    showToast('Nur zum Anschauen', 'Dieser geteilte Link kann nicht bearbeitet werden.', 'error');
     return true;
   }
 
@@ -110,6 +124,7 @@
   }
 
   function editEntry(id) {
+    if (blockWriteWhenReadOnly()) return;
     const entry = entries.find((item) => item.id === id);
     if (!entry) {
       showToast('Eintrag nicht mehr da', 'Dieser Eintrag ist nicht mehr in der Liste.', 'error');
@@ -126,6 +141,7 @@
   }
 
   async function deleteEntry(id) {
+    if (blockWriteWhenReadOnly()) return;
     const entry = entries.find((item) => item.id === id);
     if (!entry) return;
 
@@ -145,6 +161,7 @@
   }
 
   async function deleteSelectedEntries() {
+    if (blockWriteWhenReadOnly()) return;
     const selected = getSelectedEntries();
     if (!selected.length) {
       showToast('Nichts ausgewählt', 'Wähle zuerst einen oder mehrere Einträge aus.');
@@ -178,6 +195,7 @@
   }
 
   async function deleteAllEntries() {
+    if (blockWriteWhenReadOnly()) return;
     if (!entries.length) {
       showToast('Keine Einträge', 'Die Liste ist bereits leer.');
       return;
@@ -208,6 +226,7 @@
 
   function saveForm(event) {
     event.preventDefault();
+    if (blockWriteWhenReadOnly()) return;
 
     if (entries.length >= APP_CONFIG.maxEntries && !selectors.entryId.value) {
       showToast('Liste ist voll', `Es können bis zu ${APP_CONFIG.maxEntries} Einträge gespeichert werden.`, 'error');
@@ -318,6 +337,10 @@
   }
 
   async function importJson(event) {
+    if (blockWriteWhenReadOnly()) {
+      event.target.value = '';
+      return;
+    }
     const file = event.target.files?.[0];
     if (!file) return;
 
@@ -437,6 +460,50 @@
     });
     render();
   }
+
+
+  function getEntriesSnapshot() {
+    return entries.map((entry) => ({ ...entry }));
+  }
+
+  function applyEntriesFromShare(sharedEntries) {
+    const result = validateAndNormalizeEntries(sharedEntries, {
+      knownSignatures: [],
+      knownIds: [],
+      dedupe: false,
+      strict: false,
+    });
+
+    entries = result.entries.slice(0, APP_CONFIG.maxEntries);
+    selectedEntryIds = new Set();
+    resetForm();
+    saveEntries(entries);
+    render();
+  }
+
+  function setReadOnlyMode(enabled) {
+    readOnlyMode = Boolean(enabled);
+    document.documentElement.dataset.shareMode = readOnlyMode ? 'readonly' : 'editable';
+
+    const fields = selectors.form.querySelectorAll('input, select, textarea, button');
+    fields.forEach((field) => {
+      if (field.id === 'entryId') return;
+      field.disabled = readOnlyMode;
+    });
+
+    selectors.deleteAllBtn.disabled = readOnlyMode;
+    selectors.deleteSelectedBtn.disabled = readOnlyMode;
+    selectors.importJsonInput.disabled = readOnlyMode;
+    selectors.restoreConfirmBtn.disabled = readOnlyMode;
+    render();
+  }
+
+  UwUBooks.app = Object.freeze({
+    getEntries: getEntriesSnapshot,
+    applyEntriesFromShare,
+    setReadOnlyMode,
+    isReadOnlyMode: () => readOnlyMode,
+  });
 
   function initEvents() {
     selectors.form.addEventListener('submit', saveForm);
