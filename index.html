@@ -84,19 +84,18 @@
             <input id="bookTitle" name="bookTitle" type="text" placeholder="Buchtitel" required maxlength="140">
           </label>
 
+          <div class="field-grid field-grid--two">
+            <label class="field">
+              <span>Abgegeben am</span>
+              <input id="submittedDate" name="submittedDate" type="date" required>
+            </label>
+            <label class="field">
+              <span>Veröffentlicht am</span>
+              <input id="publishedDate" name="publishedDate" type="date">
+            </label>
+          </div>
+
           <div class="field-grid field-grid--three">
-            <label class="field">
-              <span>Status</span>
-              <select id="status" name="status">
-                <option value="Abgegeben">Abgegeben</option>
-                <option value="Veröffentlicht">Veröffentlicht</option>
-                <option value="Im Lektorat">Im Lektorat</option>
-              </select>
-            </label>
-            <label class="field">
-              <span id="statusDateLabel">Abgegeben am</span>
-              <input id="statusDate" name="statusDate" type="date" required>
-            </label>
             <label class="field toggle-field">
               <span>Im Lektorat</span>
               <button class="toggle" id="editorialToggle" type="button" role="switch" aria-checked="false">
@@ -105,11 +104,23 @@
               </button>
               <input id="inEditorial" name="inEditorial" type="hidden" value="Nein">
             </label>
+            <label class="field">
+              <span>Übernommen von</span>
+              <input id="takenBy" name="takenBy" type="text" placeholder="Name oder Kürzel" maxlength="80">
+            </label>
+            <label class="field">
+              <span>Bearbeitungsstatus</span>
+              <select id="workStatus" name="workStatus">
+                <option value="Offen">Offen</option>
+                <option value="In Bearbeitung">In Bearbeitung</option>
+                <option value="Abgeschlossen">Abgeschlossen</option>
+              </select>
+            </label>
           </div>
 
           <label class="field">
-            <span>Notizen</span>
-            <textarea id="notes" name="notes" rows="3" placeholder="Notiz oder Hinweis …" maxlength="500"></textarea>
+            <span>Anmerkungen</span>
+            <textarea id="notes" name="notes" rows="3" placeholder="Anmerkung oder Hinweis …" maxlength="500"></textarea>
           </label>
 
           <div class="form-actions">
@@ -126,7 +137,7 @@
           </div>
           <div class="stats" aria-label="Statistiken">
             <div class="stat-card"><span id="totalCount">0</span><small>Gesamt</small></div>
-            <div class="stat-card"><span id="publishedCount">0</span><small>Veröffentlicht</small></div>
+            <div class="stat-card"><span id="publishedCount">0</span><small>In Bearbeitung</small></div>
             <div class="stat-card"><span id="editorialCount">0</span><small>Lektorat</small></div>
           </div>
         </div>
@@ -134,13 +145,13 @@
         <div class="toolbar">
           <label class="search-box">
             <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10.5 4a6.5 6.5 0 0 1 5.17 10.44l3.45 3.44a1 1 0 0 1-1.41 1.41l-3.45-3.44A6.5 6.5 0 1 1 10.5 4Zm0 2a4.5 4.5 0 1 0 0 9 4.5 4.5 0 0 0 0-9Z"/></svg>
-            <input id="searchInput" type="search" placeholder="Name, Titel, Telefon oder Pseudonym suchen …">
+            <input id="searchInput" type="search" placeholder="Name, Titel, Telefon, Pseudonym oder Bearbeitung suchen …">
           </label>
-          <select id="statusFilter" aria-label="Status filtern">
-            <option value="Alle">Alle Status</option>
-            <option value="Abgegeben">Abgegeben</option>
-            <option value="Veröffentlicht">Veröffentlicht</option>
-            <option value="Im Lektorat">Im Lektorat</option>
+          <select id="statusFilter" aria-label="Bearbeitungsstatus filtern">
+            <option value="Alle">Alle Bearbeitungsstände</option>
+            <option value="Offen">Offen</option>
+            <option value="In Bearbeitung">In Bearbeitung</option>
+            <option value="Abgeschlossen">Abgeschlossen</option>
           </select>
           <button class="ghost-button confirmation-reset-button" id="restoreConfirmBtn" type="button" hidden>Nachfragen wieder anzeigen</button>
           <button class="danger-soft-button" id="deleteAllBtn" type="button">Liste leeren</button>
@@ -172,7 +183,7 @@
                 </th>
                 <th>Person</th>
                 <th>Buchtitel</th>
-                <th>Status</th>
+                <th>Bearbeitung</th>
                 <th>Kontakt</th>
                 <th>Aktionen</th>
               </tr>

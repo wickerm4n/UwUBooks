@@ -3,13 +3,12 @@
 
   const UwUBooks = window.UwUBooks = window.UwUBooks || {};
   const APP_CONFIG = UwUBooks.APP_CONFIG;
-  const STATUS_SET = new Set(APP_CONFIG.statuses);
+  const WORK_STATUS_SET = new Set(APP_CONFIG.workStatuses);
+  const LEGACY_STATUS_SET = new Set(APP_CONFIG.legacyStatuses || []);
   const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
 
   function isPlainObject(value) {
-    if (!value || typeof value !== 'object') return false;
-    const proto = Object.getPrototypeOf(value);
-    return proto === Object.prototype || proto === null;
+    return Object.prototype.toString.call(value) === '[object Object]';
   }
 
   function stripControls(value) {
@@ -31,9 +30,14 @@
     return !Number.isNaN(date.getTime()) && date.toISOString().slice(0, 10) === value;
   }
 
-  function normalizeDate(value, fallback = todayIsoDate()) {
-    const normalized = limitText(value, 'statusDate');
+  function normalizeRequiredDate(value, fallback = todayIsoDate()) {
+    const normalized = limitText(value, 'submittedDate');
     return isValidIsoDate(normalized) ? normalized : fallback;
+  }
+
+  function normalizeOptionalDate(value) {
+    const normalized = limitText(value, 'publishedDate');
+    return normalized && isValidIsoDate(normalized) ? normalized : '';
   }
 
   function normalizeDateTime(value) {
@@ -43,13 +47,18 @@
     return Number.isNaN(date.getTime()) ? new Date().toISOString() : date.toISOString();
   }
 
-  function normalizeStatus(value) {
-    const status = limitText(value, 'status');
-    return STATUS_SET.has(status) ? status : 'Abgegeben';
+  function normalizeWorkStatus(value, legacyStatus = '') {
+    const status = limitText(value, 'workStatus');
+    if (WORK_STATUS_SET.has(status)) return status;
+
+    const legacy = limitText(legacyStatus, 'status');
+    if (legacy === 'Veröffentlicht') return 'Abgeschlossen';
+    if (legacy === 'Im Lektorat') return 'In Bearbeitung';
+    return 'Offen';
   }
 
-  function normalizeEditorial(value, status) {
-    if (value === true || value === 'Ja' || status === 'Im Lektorat') return 'Ja';
+  function normalizeEditorial(value, legacyStatus = '') {
+    if (value === true || value === 'Ja' || legacyStatus === 'Im Lektorat') return 'Ja';
     return 'Nein';
   }
 
@@ -69,21 +78,53 @@
     return `uwu-${Date.now()}-${Math.random().toString(16).slice(2)}`;
   }
 
+  function legacySubmittedDate(input) {
+    const legacyDate = limitText(input.statusDate, 'statusDate');
+    const submittedDate = limitText(input.submittedDate, 'submittedDate');
+    if (isValidIsoDate(submittedDate)) return submittedDate;
+    if (isValidIsoDate(legacyDate)) return legacyDate;
+    return '';
+  }
+
+  function legacyPublishedDate(input) {
+    const explicit = limitText(input.publishedDate, 'publishedDate');
+    if (isValidIsoDate(explicit)) return explicit;
+    const legacyStatus = limitText(input.status, 'status');
+    const legacyDate = limitText(input.statusDate, 'statusDate');
+    if (legacyStatus === 'Veröffentlicht' && isValidIsoDate(legacyDate)) return legacyDate;
+    return '';
+  }
+
   function normalizeEntry(input, options = {}) {
     if (!isPlainObject(input)) {
       throw new Error('Ein Eintrag in der Sicherung ist unvollständig.');
     }
 
     const now = new Date().toISOString();
-    const rawStatus = limitText(input.status, 'status');
-    if (options.strict && !STATUS_SET.has(rawStatus)) {
+    const legacyStatus = limitText(input.status, 'status');
+    const rawWorkStatus = limitText(input.workStatus, 'workStatus');
+    if (options.strict && rawWorkStatus && !WORK_STATUS_SET.has(rawWorkStatus)) {
+      throw new Error('Ein Eintrag nutzt einen Bearbeitungsstand, den UwU Books nicht kennt.');
+    }
+    if (options.strict && legacyStatus && !LEGACY_STATUS_SET.has(legacyStatus) && !WORK_STATUS_SET.has(legacyStatus)) {
       throw new Error('Ein Eintrag nutzt einen Status, den UwU Books nicht kennt.');
     }
-    const rawStatusDate = limitText(input.statusDate, 'statusDate');
-    if (options.strict && !isValidIsoDate(rawStatusDate)) {
-      throw new Error('Ein Eintrag enthält ein Datum, das UwU Books nicht lesen kann.');
+
+    const submittedDateRaw = legacySubmittedDate(input);
+    const publishedDateRaw = legacyPublishedDate(input);
+    const explicitSubmitted = limitText(input.submittedDate, 'submittedDate');
+    const explicitPublished = limitText(input.publishedDate, 'publishedDate');
+    if (options.strict && explicitSubmitted && !isValidIsoDate(explicitSubmitted)) {
+      throw new Error('Ein Eintrag enthält ein Abgabedatum, das UwU Books nicht lesen kann.');
     }
-    const status = normalizeStatus(rawStatus);
+    if (options.strict && explicitPublished && !isValidIsoDate(explicitPublished)) {
+      throw new Error('Ein Eintrag enthält ein Veröffentlichungsdatum, das UwU Books nicht lesen kann.');
+    }
+    if (options.strict && !isValidIsoDate(submittedDateRaw)) {
+      throw new Error('Ein Eintrag enthält kein lesbares Abgabedatum.');
+    }
+
+    const workStatus = normalizeWorkStatus(rawWorkStatus || (WORK_STATUS_SET.has(legacyStatus) ? legacyStatus : ''), legacyStatus);
     const entry = Object.freeze({
       id: limitText(input.id, 'id') || createEntryId(),
       firstName: limitText(input.firstName, 'firstName'),
@@ -91,11 +132,13 @@
       phone: normalizePhone(input.phone),
       accountData: limitText(input.accountData, 'accountData'),
       bookTitle: limitText(input.bookTitle, 'bookTitle'),
-      status,
-      statusDate: options.strict ? rawStatusDate : normalizeDate(input.statusDate),
-      inEditorial: normalizeEditorial(input.inEditorial, status),
+      submittedDate: options.strict ? submittedDateRaw : normalizeRequiredDate(submittedDateRaw),
+      publishedDate: normalizeOptionalDate(publishedDateRaw),
+      inEditorial: normalizeEditorial(input.inEditorial, legacyStatus),
+      takenBy: limitText(input.takenBy || input.editor || input.editorialOwner, 'takenBy'),
+      workStatus,
       pseudonym: limitText(input.pseudonym, 'pseudonym'),
-      notes: limitText(input.notes, 'notes'),
+      notes: limitText(input.notes || input.comments || input.annotation, 'notes'),
       createdAt: normalizeDateTime(input.createdAt || now),
       updatedAt: normalizeDateTime(input.updatedAt || now),
     });
@@ -105,7 +148,7 @@
       if (!entry.firstName) missing.push('Vorname');
       if (!entry.lastName) missing.push('Nachname');
       if (!entry.bookTitle) missing.push('Buchtitel');
-      if (!entry.statusDate) missing.push('Datum');
+      if (!entry.submittedDate) missing.push('Abgegeben am');
       if (missing.length) {
         throw new Error(`Bitte ergänze noch: ${missing.join(', ')}`);
       }
@@ -119,7 +162,7 @@
       entry.firstName,
       entry.lastName,
       entry.bookTitle,
-      entry.statusDate,
+      entry.submittedDate,
       entry.pseudonym,
     ].map((part) => String(part || '').trim().toLowerCase()).join('|');
   }
@@ -193,7 +236,7 @@
         }
         return result.entries;
       } catch (error) {
-        console.warn(`UwU Books: gespeicherte Browser-Daten konnten nicht gelesen werden.`, error);
+        console.warn('UwU Books: gespeicherte Browser-Daten konnten nicht gelesen werden.', error);
       }
     }
     return [];
@@ -235,7 +278,8 @@
   function toCsv(entries) {
     const header = [
       'Vorname', 'Nachname', 'Telefonnummer', 'Kontodaten', 'Buchtitel',
-      'Status', 'Statusdatum', 'Im Lektorat', 'Pseudonym', 'Notizen', 'Erstellt am', 'Geändert am'
+      'Abgegeben am', 'Veröffentlicht am', 'Im Lektorat', 'Übernommen von',
+      'Bearbeitungsstatus', 'Pseudonym', 'Anmerkungen', 'Erstellt am', 'Geändert am'
     ];
 
     const escape = (value) => {
@@ -249,9 +293,11 @@
       entry.phone,
       entry.accountData,
       entry.bookTitle,
-      entry.status,
-      entry.statusDate,
+      entry.submittedDate,
+      entry.publishedDate,
       entry.inEditorial,
+      entry.takenBy,
+      entry.workStatus,
       entry.pseudonym,
       entry.notes,
       entry.createdAt,

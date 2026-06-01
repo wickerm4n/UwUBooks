@@ -12,11 +12,12 @@
     phone: document.querySelector('#phone'),
     accountData: document.querySelector('#accountData'),
     bookTitle: document.querySelector('#bookTitle'),
-    status: document.querySelector('#status'),
-    statusDate: document.querySelector('#statusDate'),
-    statusDateLabel: document.querySelector('#statusDateLabel'),
+    submittedDate: document.querySelector('#submittedDate'),
+    publishedDate: document.querySelector('#publishedDate'),
     editorialToggle: document.querySelector('#editorialToggle'),
     inEditorial: document.querySelector('#inEditorial'),
+    takenBy: document.querySelector('#takenBy'),
+    workStatus: document.querySelector('#workStatus'),
     pseudonym: document.querySelector('#pseudonym'),
     notes: document.querySelector('#notes'),
     saveBtn: document.querySelector('#saveBtn'),
@@ -82,15 +83,9 @@
     }).format(date);
   }
 
-  function statusDateLabel(status) {
-    if (status === 'Veröffentlicht') return 'Veröffentlicht am';
-    if (status === 'Im Lektorat') return 'Im Lektorat seit';
-    return 'Abgegeben am';
-  }
-
   function badgeClass(status) {
-    if (status === 'Veröffentlicht') return 'badge--published';
-    if (status === 'Im Lektorat') return 'badge--editorial';
+    if (status === 'Abgeschlossen') return 'badge--published';
+    if (status === 'In Bearbeitung') return 'badge--editorial';
     return 'badge--given';
   }
 
@@ -104,9 +99,9 @@
   function resetForm() {
     selectors.form.reset();
     selectors.entryId.value = '';
-    selectors.statusDate.value = new Date().toISOString().slice(0, 10);
-    selectors.status.value = 'Abgegeben';
-    selectors.statusDateLabel.textContent = statusDateLabel('Abgegeben');
+    selectors.submittedDate.value = new Date().toISOString().slice(0, 10);
+    selectors.publishedDate.value = '';
+    selectors.workStatus.value = 'Offen';
     setEditorialToggle(false);
     selectors.saveBtn.textContent = 'Eintrag speichern';
     selectors.firstName.focus({ preventScroll: true });
@@ -119,10 +114,11 @@
     selectors.phone.value = entry.phone;
     selectors.accountData.value = entry.accountData;
     selectors.bookTitle.value = entry.bookTitle;
-    selectors.status.value = entry.status;
-    selectors.statusDate.value = entry.statusDate;
-    selectors.statusDateLabel.textContent = statusDateLabel(entry.status);
+    selectors.submittedDate.value = entry.submittedDate;
+    selectors.publishedDate.value = entry.publishedDate || '';
     setEditorialToggle(entry.inEditorial === 'Ja');
+    selectors.takenBy.value = entry.takenBy || '';
+    selectors.workStatus.value = entry.workStatus || 'Offen';
     selectors.pseudonym.value = entry.pseudonym;
     selectors.notes.value = entry.notes;
     selectors.saveBtn.textContent = 'Änderungen speichern';
@@ -137,9 +133,11 @@
       phone: selectors.phone.value,
       accountData: selectors.accountData.value,
       bookTitle: selectors.bookTitle.value,
-      status: selectors.status.value,
-      statusDate: selectors.statusDate.value,
+      submittedDate: selectors.submittedDate.value,
+      publishedDate: selectors.publishedDate.value,
       inEditorial: selectors.inEditorial.value,
+      takenBy: selectors.takenBy.value,
+      workStatus: selectors.workStatus.value,
       pseudonym: selectors.pseudonym.value,
       notes: selectors.notes.value,
     };
@@ -210,20 +208,25 @@
       title.textContent = entry.bookTitle || 'Ohne Titel';
       const notes = document.createElement('span');
       notes.className = 'cell-subline';
-      notes.textContent = entry.notes || 'Keine Notiz';
+      notes.textContent = entry.notes || 'Keine Anmerkung';
       titleCell.append(title, notes);
 
       const statusCell = document.createElement('td');
       const badge = document.createElement('span');
-      badge.className = `badge ${badgeClass(entry.status)}`;
-      badge.textContent = entry.status;
-      const dateLine = document.createElement('span');
-      dateLine.className = 'cell-subline';
-      dateLine.textContent = `${statusDateLabel(entry.status)}: ${formatDate(entry.statusDate)}`;
+      badge.className = `badge ${badgeClass(entry.workStatus)}`;
+      badge.textContent = entry.workStatus;
+      const submittedLine = document.createElement('span');
+      submittedLine.className = 'cell-subline';
+      submittedLine.textContent = `Abgegeben am: ${formatDate(entry.submittedDate)}`;
+      const publishedLine = document.createElement('span');
+      publishedLine.className = 'cell-subline';
+      publishedLine.textContent = `Veröffentlicht am: ${formatDate(entry.publishedDate)}`;
       const editorialLine = document.createElement('span');
       editorialLine.className = 'cell-subline';
-      editorialLine.textContent = `Im Lektorat: ${entry.inEditorial}`;
-      statusCell.append(badge, dateLine, editorialLine);
+      editorialLine.textContent = entry.inEditorial === 'Ja'
+        ? `Im Lektorat: Ja${entry.takenBy ? ` · ${entry.takenBy}` : ''}`
+        : 'Im Lektorat: Nein';
+      statusCell.append(badge, submittedLine, publishedLine, editorialLine);
 
       const contactCell = document.createElement('td');
       contactCell.appendChild(createSubline('Telefon', entry.phone));
@@ -244,8 +247,8 @@
 
   function updateStats(entries) {
     selectors.totalCount.textContent = entries.length;
-    selectors.publishedCount.textContent = entries.filter((entry) => entry.status === 'Veröffentlicht').length;
-    selectors.editorialCount.textContent = entries.filter((entry) => entry.inEditorial === 'Ja' || entry.status === 'Im Lektorat').length;
+    selectors.publishedCount.textContent = entries.filter((entry) => entry.workStatus === 'In Bearbeitung').length;
+    selectors.editorialCount.textContent = entries.filter((entry) => entry.inEditorial === 'Ja').length;
   }
 
   function showToast(title, message = '', type = 'info') {
@@ -435,7 +438,6 @@
     updateStats,
     setEditorialToggle,
     setSubmitLocked,
-    statusDateLabel,
     showToast,
     confirmDialog,
     resetSkippedConfirmations,

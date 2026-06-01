@@ -22,7 +22,6 @@
     renderEntries,
     updateStats,
     setEditorialToggle,
-    statusDateLabel,
     showToast,
     confirmDialog,
     resetSkippedConfirmations,
@@ -51,16 +50,18 @@
     const status = selectors.statusFilter.value;
 
     return entries.filter((entry) => {
-      const matchesStatus = status === 'Alle' || entry.status === status;
+      const matchesStatus = status === 'Alle' || entry.workStatus === status;
       const haystack = normalizeSearch([
         entry.firstName,
         entry.lastName,
         entry.phone,
         entry.accountData,
         entry.bookTitle,
-        entry.status,
-        entry.statusDate,
+        entry.submittedDate,
+        entry.publishedDate,
         entry.inEditorial,
+        entry.takenBy,
+        entry.workStatus,
         entry.pseudonym,
         entry.notes,
       ].join(' '));
@@ -247,7 +248,7 @@
     const stamp = new Date().toISOString().slice(0, 10);
     const payload = {
       app: APP_CONFIG.appName,
-      schemaVersion: 2,
+      schemaVersion: 3,
       exportedAt: new Date().toISOString(),
       entries,
     };
@@ -271,7 +272,7 @@
     const stamp = new Date().toISOString().slice(0, 10);
     const payload = {
       app: APP_CONFIG.appName,
-      schemaVersion: 2,
+      schemaVersion: 3,
       exportedAt: new Date().toISOString(),
       exportedSelection: true,
       entries: selected,
@@ -459,11 +460,6 @@
     selectors.phone.addEventListener('input', enforcePhoneInput);
     selectors.tbody.addEventListener('click', handleTableClick);
     selectors.tbody.addEventListener('change', handleTableSelection);
-
-    selectors.status.addEventListener('change', () => {
-      selectors.statusDateLabel.textContent = statusDateLabel(selectors.status.value);
-      if (selectors.status.value === 'Im Lektorat') setEditorialToggle(true);
-    });
 
     selectors.editorialToggle.addEventListener('click', () => {
       const isChecked = selectors.editorialToggle.getAttribute('aria-checked') === 'true';
