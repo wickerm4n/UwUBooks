@@ -5,14 +5,14 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="description" content="UwU Books – Verwaltungsseite für eine Bücherei im GTA RP.">
   <meta name="theme-color" content="#ff7abf">
-  <meta name="uwu-app-version" content="2026.06.01.3">
+  <meta name="uwu-app-version" content="2026.06.02.1">
   <meta name="referrer" content="no-referrer">
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; font-src 'self'; connect-src 'self' https://uwubooks-default-rtdb.europe-west1.firebasedatabase.app; object-src 'none'; base-uri 'self'; form-action 'none'; frame-ancestors 'none'; upgrade-insecure-requests">
   <title>UwU Books</title>
   <link rel="icon" href="assets/uwu-books-icon.svg" type="image/svg+xml">
-  <link rel="manifest" href="manifest.webmanifest?v=2026.06.01.3">
-  <link rel="preload" href="css/styles.css?v=2026.06.01.3" as="style">
-  <link rel="stylesheet" href="css/styles.css?v=2026.06.01.3">
+  <link rel="manifest" href="manifest.webmanifest?v=2026.06.02.1">
+  <link rel="preload" href="css/styles.css?v=2026.06.02.1" as="style">
+  <link rel="stylesheet" href="css/styles.css?v=2026.06.02.1">
 </head>
 <body>
   <div class="app-shell">
@@ -95,7 +95,7 @@
             </label>
           </div>
 
-          <div class="field-grid field-grid--three">
+          <div class="field-grid field-grid--two">
             <label class="field toggle-field">
               <span>Im Lektorat</span>
               <button class="toggle" id="editorialToggle" type="button" role="switch" aria-checked="false">
@@ -107,14 +107,6 @@
             <label class="field">
               <span>Übernommen von</span>
               <input id="takenBy" name="takenBy" type="text" placeholder="Name oder Kürzel" maxlength="80">
-            </label>
-            <label class="field">
-              <span>Bearbeitungsstatus</span>
-              <select id="workStatus" name="workStatus">
-                <option value="Offen">Offen</option>
-                <option value="In Bearbeitung">In Bearbeitung</option>
-                <option value="Abgeschlossen">Abgeschlossen</option>
-              </select>
             </label>
           </div>
 
@@ -137,7 +129,7 @@
           </div>
           <div class="stats" aria-label="Statistiken">
             <div class="stat-card"><span id="totalCount">0</span><small>Gesamt</small></div>
-            <div class="stat-card"><span id="publishedCount">0</span><small>In Bearbeitung</small></div>
+            <div class="stat-card"><span id="publishedCount">0</span><small>Veröffentlicht</small></div>
             <div class="stat-card"><span id="editorialCount">0</span><small>Lektorat</small></div>
           </div>
         </div>
@@ -145,14 +137,8 @@
         <div class="toolbar">
           <label class="search-box">
             <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10.5 4a6.5 6.5 0 0 1 5.17 10.44l3.45 3.44a1 1 0 0 1-1.41 1.41l-3.45-3.44A6.5 6.5 0 1 1 10.5 4Zm0 2a4.5 4.5 0 1 0 0 9 4.5 4.5 0 0 0 0-9Z"/></svg>
-            <input id="searchInput" type="search" aria-label="Einträge suchen" placeholder="Name, Titel, Telefon, Pseudonym oder Bearbeitung suchen …">
+            <input id="searchInput" type="search" aria-label="Einträge suchen" placeholder="Name, Titel, Telefon, Pseudonym oder Lektorat suchen …">
           </label>
-          <select id="statusFilter" aria-label="Bearbeitungsstatus filtern">
-            <option value="Alle">Alle Bearbeitungsstände</option>
-            <option value="Offen">Offen</option>
-            <option value="In Bearbeitung">In Bearbeitung</option>
-            <option value="Abgeschlossen">Abgeschlossen</option>
-          </select>
           <button class="ghost-button confirmation-reset-button" id="restoreConfirmBtn" type="button" hidden>Nachfragen wieder anzeigen</button>
           <button class="danger-soft-button" id="deleteAllBtn" type="button">Liste leeren</button>
           <div class="bulk-toolbar" id="bulkToolbar" hidden aria-live="polite">
@@ -169,7 +155,7 @@
               <col class="col-select">
               <col class="col-person">
               <col class="col-title">
-              <col class="col-status">
+              <col class="col-editorial">
               <col class="col-contact">
               <col class="col-actions">
             </colgroup>
@@ -183,7 +169,7 @@
                 </th>
                 <th>Person</th>
                 <th>Buchtitel</th>
-                <th>Bearbeitung</th>
+                <th>Lektorat</th>
                 <th>Kontakt</th>
                 <th>Aktionen</th>
               </tr>
@@ -226,11 +212,11 @@
 
   <div class="toast-stack" id="toastStack" aria-live="polite" aria-atomic="true"></div>
 
-  <script defer src="js/config.js?v=2026.06.01.3"></script>
-  <script defer src="js/storage.js?v=2026.06.01.3"></script>
-  <script defer src="js/ui.js?v=2026.06.01.3"></script>
-  <script defer src="js/app.js?v=2026.06.01.3"></script>
-  <script defer src="js/firebase-sync.js?v=2026.06.01.3"></script>
-  <script defer src="js/update.js?v=2026.06.01.3"></script>
+  <script defer src="js/config.js?v=2026.06.02.1"></script>
+  <script defer src="js/storage.js?v=2026.06.02.1"></script>
+  <script defer src="js/ui.js?v=2026.06.02.1"></script>
+  <script defer src="js/app.js?v=2026.06.02.1"></script>
+  <script defer src="js/firebase-sync.js?v=2026.06.02.1"></script>
+  <script defer src="js/update.js?v=2026.06.02.1"></script>
 </body>
 </html>

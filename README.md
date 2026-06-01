@@ -2,7 +2,7 @@
 
 Eine kleine Bücherverwaltung für die UwU-Books-RP-Community in GTA V.
 
-Hier können Buchabgaben, Bearbeitungsstände und wichtige Kontaktinfos übersichtlich gesammelt werden, damit im RP-Alltag nichts untergeht.
+Hier können Buchabgaben, Lektoratsstände und wichtige Kontaktinfos übersichtlich gesammelt werden, damit im RP-Alltag nichts untergeht.
 
 ## Wofür ist die Seite gedacht?
 
@@ -47,7 +47,6 @@ Je nach RP-Ablauf können zum Beispiel diese Infos gepflegt werden:
 - Veröffentlichungsdatum
 - Lektoratsstatus
 - zuständige Person
-- Bearbeitungsstatus
 - Pseudonym
 - Anmerkungen
 

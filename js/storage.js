@@ -3,7 +3,6 @@
 
   const UwUBooks = window.UwUBooks = window.UwUBooks || {};
   const APP_CONFIG = UwUBooks.APP_CONFIG;
-  const WORK_STATUS_SET = new Set(APP_CONFIG.workStatuses);
   const LEGACY_STATUS_SET = new Set(APP_CONFIG.legacyStatuses || []);
   const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
 
@@ -47,18 +46,8 @@
     return Number.isNaN(date.getTime()) ? new Date().toISOString() : date.toISOString();
   }
 
-  function normalizeWorkStatus(value, legacyStatus = '') {
-    const status = limitText(value, 'workStatus');
-    if (WORK_STATUS_SET.has(status)) return status;
-
-    const legacy = limitText(legacyStatus, 'status');
-    if (legacy === 'Veröffentlicht') return 'Abgeschlossen';
-    if (legacy === 'Im Lektorat') return 'In Bearbeitung';
-    return 'Offen';
-  }
-
-  function normalizeEditorial(value, legacyStatus = '') {
-    if (value === true || value === 'Ja' || legacyStatus === 'Im Lektorat') return 'Ja';
+  function normalizeEditorial(value, legacyStatus = '', legacyWorkStatus = '') {
+    if (value === true || value === 'Ja' || legacyStatus === 'Im Lektorat' || legacyWorkStatus === 'In Bearbeitung') return 'Ja';
     return 'Nein';
   }
 
@@ -102,11 +91,8 @@
 
     const now = new Date().toISOString();
     const legacyStatus = limitText(input.status, 'status');
-    const rawWorkStatus = limitText(input.workStatus, 'workStatus');
-    if (options.strict && rawWorkStatus && !WORK_STATUS_SET.has(rawWorkStatus)) {
-      throw new Error('Ein Eintrag nutzt einen Bearbeitungsstand, den UwU Books nicht kennt.');
-    }
-    if (options.strict && legacyStatus && !LEGACY_STATUS_SET.has(legacyStatus) && !WORK_STATUS_SET.has(legacyStatus)) {
+    const legacyWorkStatus = limitText(input.workStatus, 'status');
+    if (options.strict && legacyStatus && !LEGACY_STATUS_SET.has(legacyStatus)) {
       throw new Error('Ein Eintrag nutzt einen Status, den UwU Books nicht kennt.');
     }
 
@@ -124,7 +110,6 @@
       throw new Error('Ein Eintrag enthält kein lesbares Abgabedatum.');
     }
 
-    const workStatus = normalizeWorkStatus(rawWorkStatus || (WORK_STATUS_SET.has(legacyStatus) ? legacyStatus : ''), legacyStatus);
     const entry = Object.freeze({
       id: limitText(input.id, 'id') || createEntryId(),
       firstName: limitText(input.firstName, 'firstName'),
@@ -134,9 +119,8 @@
       bookTitle: limitText(input.bookTitle, 'bookTitle'),
       submittedDate: options.strict ? submittedDateRaw : normalizeRequiredDate(submittedDateRaw),
       publishedDate: normalizeOptionalDate(publishedDateRaw),
-      inEditorial: normalizeEditorial(input.inEditorial, legacyStatus),
+      inEditorial: normalizeEditorial(input.inEditorial, legacyStatus, legacyWorkStatus),
       takenBy: limitText(input.takenBy || input.editor || input.editorialOwner, 'takenBy'),
-      workStatus,
       pseudonym: limitText(input.pseudonym, 'pseudonym'),
       notes: limitText(input.notes || input.comments || input.annotation, 'notes'),
       createdAt: normalizeDateTime(input.createdAt || now),
@@ -279,7 +263,7 @@
     const header = [
       'Vorname', 'Nachname', 'Telefonnummer', 'Kontodaten', 'Buchtitel',
       'Abgegeben am', 'Veröffentlicht am', 'Im Lektorat', 'Übernommen von',
-      'Bearbeitungsstatus', 'Pseudonym', 'Anmerkungen', 'Erstellt am', 'Geändert am'
+      'Pseudonym', 'Anmerkungen', 'Erstellt am', 'Geändert am'
     ];
 
     const escape = (value) => {
@@ -297,7 +281,6 @@
       entry.publishedDate,
       entry.inEditorial,
       entry.takenBy,
-      entry.workStatus,
       entry.pseudonym,
       entry.notes,
       entry.createdAt,

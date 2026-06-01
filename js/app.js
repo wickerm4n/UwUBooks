@@ -62,10 +62,8 @@
 
   function getFilteredEntries() {
     const query = normalizeSearch(selectors.searchInput.value);
-    const status = selectors.statusFilter.value;
 
     return entries.filter((entry) => {
-      const matchesStatus = status === 'Alle' || entry.workStatus === status;
       const haystack = normalizeSearch([
         entry.firstName,
         entry.lastName,
@@ -76,11 +74,10 @@
         entry.publishedDate,
         entry.inEditorial,
         entry.takenBy,
-        entry.workStatus,
         entry.pseudonym,
         entry.notes,
       ].join(' '));
-      return matchesStatus && (!query || haystack.includes(query));
+      return !query || haystack.includes(query);
     }).sort((a, b) => String(b.updatedAt || '').localeCompare(String(a.updatedAt || '')));
   }
 
@@ -269,7 +266,7 @@
     const stamp = new Date().toISOString().slice(0, 10);
     const payload = {
       app: APP_CONFIG.appName,
-      schemaVersion: 3,
+      schemaVersion: 4,
       exportedAt: new Date().toISOString(),
       entries,
     };
@@ -293,7 +290,7 @@
     const stamp = new Date().toISOString().slice(0, 10);
     const payload = {
       app: APP_CONFIG.appName,
-      schemaVersion: 3,
+      schemaVersion: 4,
       exportedAt: new Date().toISOString(),
       exportedSelection: true,
       entries: selected,
@@ -549,7 +546,6 @@
       if (!selectors.importJsonInput.disabled) selectors.importJsonInput.click();
     });
     selectors.searchInput.addEventListener('input', scheduleRender);
-    selectors.statusFilter.addEventListener('change', render);
     selectors.phone.addEventListener('beforeinput', blockInvalidPhoneInput);
     selectors.phone.addEventListener('paste', handlePhonePaste);
     selectors.phone.addEventListener('input', enforcePhoneInput);

@@ -688,7 +688,7 @@ textarea:focus {
 .book-table .col-select { width: 54px; }
 .book-table .col-person { width: 24%; }
 .book-table .col-title { width: 23%; }
-.book-table .col-status { width: 25%; }
+.book-table .col-editorial { width: 25%; }
 .book-table .col-contact { width: 16%; }
 .book-table .col-actions { width: 122px; }
 

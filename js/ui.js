@@ -17,13 +17,11 @@
     editorialToggle: document.querySelector('#editorialToggle'),
     inEditorial: document.querySelector('#inEditorial'),
     takenBy: document.querySelector('#takenBy'),
-    workStatus: document.querySelector('#workStatus'),
     pseudonym: document.querySelector('#pseudonym'),
     notes: document.querySelector('#notes'),
     saveBtn: document.querySelector('#saveBtn'),
     resetFormBtn: document.querySelector('#resetFormBtn'),
     searchInput: document.querySelector('#searchInput'),
-    statusFilter: document.querySelector('#statusFilter'),
     tbody: document.querySelector('#entriesTbody'),
     emptyState: document.querySelector('#emptyState'),
     totalCount: document.querySelector('#totalCount'),
@@ -83,12 +81,6 @@
     }).format(date);
   }
 
-  function badgeClass(status) {
-    if (status === 'Abgeschlossen') return 'badge--published';
-    if (status === 'In Bearbeitung') return 'badge--editorial';
-    return 'badge--given';
-  }
-
   function setEditorialToggle(isActive) {
     const checked = Boolean(isActive);
     selectors.editorialToggle.setAttribute('aria-checked', String(checked));
@@ -101,7 +93,6 @@
     selectors.entryId.value = '';
     selectors.submittedDate.value = new Date().toISOString().slice(0, 10);
     selectors.publishedDate.value = '';
-    selectors.workStatus.value = 'Offen';
     setEditorialToggle(false);
     selectors.saveBtn.textContent = 'Eintrag speichern';
     selectors.firstName.focus({ preventScroll: true });
@@ -118,7 +109,6 @@
     selectors.publishedDate.value = entry.publishedDate || '';
     setEditorialToggle(entry.inEditorial === 'Ja');
     selectors.takenBy.value = entry.takenBy || '';
-    selectors.workStatus.value = entry.workStatus || 'Offen';
     selectors.pseudonym.value = entry.pseudonym;
     selectors.notes.value = entry.notes;
     selectors.saveBtn.textContent = 'Änderungen speichern';
@@ -137,7 +127,6 @@
       publishedDate: selectors.publishedDate.value,
       inEditorial: selectors.inEditorial.value,
       takenBy: selectors.takenBy.value,
-      workStatus: selectors.workStatus.value,
       pseudonym: selectors.pseudonym.value,
       notes: selectors.notes.value,
     };
@@ -215,10 +204,7 @@
       titleCell.append(title, notes);
 
       const statusCell = document.createElement('td');
-      statusCell.dataset.label = 'Bearbeitung';
-      const badge = document.createElement('span');
-      badge.className = `badge ${badgeClass(entry.workStatus)}`;
-      badge.textContent = entry.workStatus;
+      statusCell.dataset.label = 'Lektorat';
       const submittedLine = document.createElement('span');
       submittedLine.className = 'cell-subline';
       submittedLine.textContent = `Abgegeben am: ${formatDate(entry.submittedDate)}`;
@@ -230,7 +216,7 @@
       editorialLine.textContent = entry.inEditorial === 'Ja'
         ? `Im Lektorat: Ja${entry.takenBy ? ` · ${entry.takenBy}` : ''}`
         : 'Im Lektorat: Nein';
-      statusCell.append(badge, submittedLine, publishedLine, editorialLine);
+      statusCell.append(submittedLine, publishedLine, editorialLine);
 
       const contactCell = document.createElement('td');
       contactCell.dataset.label = 'Kontakt';
@@ -253,7 +239,7 @@
 
   function updateStats(entries) {
     selectors.totalCount.textContent = entries.length;
-    selectors.publishedCount.textContent = entries.filter((entry) => entry.workStatus === 'In Bearbeitung').length;
+    selectors.publishedCount.textContent = entries.filter((entry) => entry.publishedDate).length;
     selectors.editorialCount.textContent = entries.filter((entry) => entry.inEditorial === 'Ja').length;
   }
 
