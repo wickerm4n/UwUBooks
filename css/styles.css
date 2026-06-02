@@ -98,7 +98,7 @@ textarea:focus-visible {
 .app-shell {
   width: min(1480px, calc(100% - 36px));
   margin: 0 auto;
-  padding: 26px 0 46px;
+  padding: max(26px, env(safe-area-inset-top)) 0 max(46px, env(safe-area-inset-bottom));
 }
 
 .glass-card {
@@ -536,7 +536,7 @@ textarea:focus {
 
 .toolbar {
   display: grid;
-  grid-template-columns: minmax(210px, 1fr) 180px auto auto;
+  grid-template-columns: minmax(220px, 1fr) auto auto;
   gap: 10px;
   align-items: center;
   margin-bottom: 14px;
@@ -1123,9 +1123,18 @@ textarea:focus {
 }
 
 @media (max-width: 760px) {
+  body::before {
+    background-size: 30px 30px;
+    mask-image: linear-gradient(to bottom, rgba(0,0,0,.5), transparent 62%);
+  }
+
   .app-shell {
-    width: min(100% - 22px, 1480px);
-    padding-top: 12px;
+    width: 100%;
+    padding:
+      max(8px, env(safe-area-inset-top))
+      max(10px, env(safe-area-inset-right))
+      max(28px, env(safe-area-inset-bottom))
+      max(10px, env(safe-area-inset-left));
   }
 
   .hero,
@@ -1137,7 +1146,17 @@ textarea:focus {
   .hero {
     grid-template-columns: 1fr;
     min-height: unset;
-    gap: 14px;
+    gap: 9px;
+    padding: 11px 12px 12px;
+    border-radius: 22px;
+  }
+
+  .hero::after {
+    right: -72px;
+    top: -86px;
+    width: 178px;
+    height: 178px;
+    opacity: .72;
   }
 
   .hero__brand {
@@ -1151,15 +1170,97 @@ textarea:focus {
   }
 
   .hero-banner-image {
-    width: min(100%, 920px);
-    max-width: 100%;
-    max-height: none;
+    width: auto;
+    max-width: min(78vw, 360px);
+    max-height: clamp(72px, 20vw, 96px);
     margin-inline: auto;
+    filter: drop-shadow(0 10px 22px rgba(255, 122, 191, .13));
   }
 
   .hero__actions {
     width: auto;
+    gap: 7px;
     justify-content: center;
+    padding: 6px;
+    border-radius: 18px;
+  }
+
+  .icon-button {
+    width: 44px;
+    height: 44px;
+    border-radius: 14px;
+  }
+
+  .main-grid {
+    gap: 12px;
+    margin-top: 12px;
+  }
+
+  .form-panel,
+  .list-panel {
+    padding: 14px;
+    border-radius: 22px;
+  }
+
+  .panel__header {
+    gap: 10px;
+    flex-wrap: wrap;
+    justify-content: flex-start;
+    margin-bottom: 14px;
+  }
+
+  .panel__header > .ghost-button {
+    min-height: 38px;
+    padding-inline: 12px;
+    font-size: .88rem;
+  }
+
+  .panel__header--wrap {
+    align-items: stretch;
+  }
+
+  .panel h2 {
+    font-size: 1.36rem;
+  }
+
+  .stats {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    width: 100%;
+    gap: 7px;
+  }
+
+  .stat-card {
+    min-width: 0;
+    padding: 9px 7px;
+    border-radius: 14px;
+    text-align: center;
+  }
+
+  .stat-card span {
+    font-size: 1.1rem;
+  }
+
+  .stat-card small {
+    font-size: .6rem;
+    letter-spacing: .045em;
+  }
+
+  .book-form {
+    gap: 12px;
+  }
+
+  input,
+  select,
+  textarea {
+    min-height: 44px;
+    border-radius: 13px;
+    padding: 11px 12px;
+    font-size: 16px;
+  }
+
+  textarea {
+    min-height: 82px;
   }
 
   .field-grid--two,
@@ -1177,6 +1278,29 @@ textarea:focus {
     width: 100%;
   }
 
+  .toolbar {
+    gap: 8px;
+    margin-bottom: 10px;
+  }
+
+  .search-box svg {
+    left: 12px;
+    width: 18px;
+    height: 18px;
+  }
+
+  .search-box input {
+    padding-left: 38px;
+  }
+
+  .table-wrap {
+    min-height: 260px;
+    overflow: visible;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+  }
+
   .book-table,
   .book-table thead,
   .book-table tbody,
@@ -1191,16 +1315,24 @@ textarea:focus {
   }
 
   .book-table tr {
-    padding: 12px;
-    border-bottom: 1px solid rgba(255,255,255,.08);
+    margin-bottom: 10px;
+    padding: 10px;
+    border: 1px solid rgba(255,255,255,.085);
+    border-radius: 18px;
+    background: rgba(6, 5, 10, .28);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.035);
+  }
+
+  .book-table tr:last-child {
+    margin-bottom: 0;
   }
 
   .book-table td {
     display: grid;
-    grid-template-columns: minmax(94px, .42fr) minmax(0, 1fr);
-    gap: 8px;
+    grid-template-columns: minmax(82px, .36fr) minmax(0, 1fr);
+    gap: 6px;
     align-items: start;
-    padding: 8px 4px;
+    padding: 7px 6px;
     border-bottom: 0;
     text-align: left;
     height: auto;
@@ -1211,9 +1343,9 @@ textarea:focus {
     grid-column: 1;
     grid-row: 1 / -1;
     color: var(--muted-2);
-    font-size: .72rem;
+    font-size: .68rem;
     font-weight: 900;
-    letter-spacing: .08em;
+    letter-spacing: .06em;
     text-transform: uppercase;
   }
 
@@ -1243,6 +1375,35 @@ textarea:focus {
     justify-content: flex-start;
     width: auto;
     min-width: 34px;
+  }
+
+  .book-table .actions-cell {
+    grid-template-columns: minmax(82px, .36fr) repeat(2, 42px) minmax(0, 1fr);
+    align-items: center;
+  }
+
+  .book-table .actions-cell > * {
+    grid-column: auto;
+  }
+
+  .book-table .actions-cell .action-mini {
+    width: 40px;
+    height: 40px;
+    margin: 0;
+  }
+
+  .cell-subline {
+    font-size: .82rem;
+  }
+
+  .empty-state {
+    min-height: 260px;
+    padding: 24px 18px;
+  }
+
+  .empty-state img {
+    width: 104px;
+    max-width: 42vw;
   }
 
   .bulk-toolbar {
@@ -1343,6 +1504,30 @@ textarea:focus {
     width: 44px;
     height: 44px;
     border-radius: 14px;
+  }
+}
+
+@media (max-width: 480px) {
+  .hero {
+    gap: 5px;
+    padding: 8px 10px;
+  }
+
+  .hero-banner-image {
+    max-width: min(74vw, 320px);
+    max-height: clamp(66px, 19vw, 82px);
+  }
+
+  .hero__actions {
+    gap: 5px;
+    padding: 5px;
+    border-radius: 16px;
+  }
+
+  .icon-button {
+    width: 38px;
+    height: 38px;
+    border-radius: 12px;
   }
 }
 

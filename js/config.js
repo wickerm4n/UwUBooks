@@ -4,7 +4,7 @@
   window.UwUBooks = window.UwUBooks || {};
   window.UwUBooks.APP_CONFIG = Object.freeze({
     appName: 'UwU Books',
-    appVersion: '2026.06.02.1',
+    appVersion: '2026.06.02.4',
     storageKey: 'uwu-books.entries.v4',
     confirmationStorageKey: 'uwu-books.confirmations.v1',
     updateVersionUrl: 'version.json',
